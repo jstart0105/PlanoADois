@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "976519580101",
+    "project_id": "planoadois-86a8d",
+    "storage_bucket": "planoadois-86a8d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:976519580101:android:b8963eb6f7f8d6ed54a3ac",
+        "android_client_info": {
+          "package_name": "com.example.plano_a_dois"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCM3DwBd8iggglzQ4m2DKts6aCFjemWuDw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
