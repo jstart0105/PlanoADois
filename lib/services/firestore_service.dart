@@ -48,8 +48,15 @@ class FirestoreService {
   }
 
   Stream<List<TransactionModel>> getTransactions(String userId, String? partnerId) {
-    // Busca transações do usuário e, se houver parceiro, as transações dele e as do casal.
-    var query = _db.collection('transactions').where('userId', whereIn: [userId, partnerId, '${userId}_${partnerId}']);
+    // CORREÇÃO: Cria a lista de IDs para a consulta, evitando valores nulos.
+    List<String> userIds = [userId];
+    if (partnerId != null && partnerId.isNotEmpty) {
+      userIds.add(partnerId);
+    }
+
+    // A consulta agora busca transações onde o 'userId' está na lista de IDs válidos
+    // OU transações que pertencem ao casal.
+    var query = _db.collection('transactions').where('userId', whereIn: userIds);
 
     return query.snapshots().map((snapshot) => snapshot.docs
         .map((doc) => TransactionModel.fromFirestore(doc))

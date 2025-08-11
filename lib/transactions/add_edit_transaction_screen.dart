@@ -3,7 +3,7 @@ import 'package:plano_a_dois/models/transaction_model.dart';
 import 'package:plano_a_dois/services/auth_service.dart';
 import 'package:plano_a_dois/services/firestore_service.dart';
 import 'package:plano_a_dois/transactions/widgets/category_grid.dart';
-import 'package:provider/provider.dart'; // Importe o Provider
+import 'package:provider/provider.dart';
 
 class AddEditTransactionScreen extends StatefulWidget {
   const AddEditTransactionScreen({super.key});
@@ -46,7 +46,6 @@ class _AddEditTransactionScreenState
         _isLoading = true;
       });
 
-      // Obter o usuário atual do AuthService via Provider
       final authService = Provider.of<AuthService>(context, listen: false);
       final currentUser = authService.currentUser;
 
@@ -62,19 +61,18 @@ class _AddEditTransactionScreenState
         return;
       }
 
-      // O valor é negativo se for despesa
-      final double value = double.parse(_valueController.text);
+      final double value = double.tryParse(_valueController.text.replaceAll(',', '.')) ?? 0.0;
       final double finalValue =
-          _transactionType == 'Despesa' ? -value : value;
+          _transactionType == 'Despesa' ? -value.abs() : value.abs();
 
       final newTransaction = TransactionModel(
-        id: '', // O Firestore irá gerar o ID
+        id: '', // Firestore irá gerar
         valor: finalValue,
-        descricao: _descriptionController.text,
+        descricao: _descriptionController.text.trim(),
         data: _selectedDate,
         categoria: _selectedCategory!,
         userId: currentUser.uid,
-        isCoupleTransaction: _transactionOwner == 'Nosso',
+        owner: _transactionOwner,
       );
 
       try {
@@ -112,6 +110,13 @@ class _AddEditTransactionScreenState
   }
 
   @override
+  void dispose() {
+    _valueController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -125,7 +130,6 @@ class _AddEditTransactionScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Seletor de Receita/Despesa
               SegmentedButton<String>(
                 segments: const [
                   ButtonSegment(value: 'Despesa', label: Text('Despesa')),
@@ -139,8 +143,6 @@ class _AddEditTransactionScreenState
                 },
               ),
               const SizedBox(height: 24),
-
-              // Campos do formulário
               TextFormField(
                 controller: _valueController,
                 decoration: const InputDecoration(
@@ -153,6 +155,9 @@ class _AddEditTransactionScreenState
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor, insira o valor.';
+                  }
+                   if (double.tryParse(value.replaceAll(',', '.')) == null) {
+                    return 'Por favor, insira um número válido.';
                   }
                   return null;
                 },
@@ -183,8 +188,6 @@ class _AddEditTransactionScreenState
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Grid de Categorias
               const Text('Categoria',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
@@ -195,9 +198,7 @@ class _AddEditTransactionScreenState
                   });
                 },
               ),
-
               const SizedBox(height: 24),
-              // Seletor de Dono da transação
               const Text('Esta transação é...',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),

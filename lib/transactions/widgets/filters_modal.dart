@@ -1,7 +1,32 @@
 import 'package:flutter/material.dart';
 
-class FiltersModal extends StatelessWidget {
-  const FiltersModal({super.key});
+class FiltersModal extends StatefulWidget {
+  final String? initialOwner;
+  final String? initialPeriod;
+
+  const FiltersModal({super.key, this.initialOwner, this.initialPeriod});
+
+  @override
+  State<FiltersModal> createState() => _FiltersModalState();
+}
+
+class _FiltersModalState extends State<FiltersModal> {
+  String? _selectedOwner;
+  String? _selectedPeriod;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedOwner = widget.initialOwner;
+    _selectedPeriod = widget.initialPeriod;
+  }
+
+  void _onApplyFilters() {
+    Navigator.of(context).pop({
+      'owner': _selectedOwner,
+      'period': _selectedPeriod,
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +52,32 @@ class FiltersModal extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          _buildFilterSection(context, 'Período', ['Este Mês', 'Mês Passado', 'Últimos 90 dias']),
+          _buildFilterSection(
+            context,
+            'Período',
+            ['Este Mês', 'Mês Passado'],
+            _selectedPeriod,
+            (newValue) {
+              setState(() {
+                _selectedPeriod = newValue;
+              });
+            },
+          ),
           const SizedBox(height: 16),
-          _buildFilterSection(context, 'Pessoa', ['Meus', 'Dele(a)', 'Nossos']),
+          _buildFilterSection(
+            context,
+            'Pessoa',
+            ['Todos', 'Meu', 'Dele(a)', 'Nosso'],
+            _selectedOwner,
+            (newValue) {
+              setState(() {
+                _selectedOwner = newValue;
+              });
+            },
+          ),
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: _onApplyFilters,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xff4f46e5),
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -47,7 +92,13 @@ class FiltersModal extends StatelessWidget {
     );
   }
 
-  Widget _buildFilterSection(BuildContext context, String title, List<String> options) {
+  Widget _buildFilterSection(
+    BuildContext context,
+    String title,
+    List<String> options,
+    String? currentSelection,
+    Function(String?) onSelected,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -66,10 +117,24 @@ class FiltersModal extends StatelessWidget {
               .map(
                 (option) => FilterChip(
                   label: Text(option),
-                  onSelected: (selected) {},
-                  backgroundColor: const Color(0xffe2e8f0),
-                  selectedColor: const Color(0xff8b5cf6),
+                  selected: currentSelection == option,
+                  onSelected: (selected) {
+                    if (selected) {
+                      onSelected(option);
+                    } else {
+                      // Permite desmarcar
+                      onSelected(null);
+                    }
+                  },
+                  backgroundColor: const Color(0xfff1f5f9),
+                  selectedColor: const Color(0xffc7d2fe),
                   labelStyle: const TextStyle(color: Color(0xff1e293b)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: currentSelection == option ? const Color(0xff4f46e5) : const Color(0xffcbd5e1),
+                    ),
+                  ),
                 ),
               )
               .toList(),
