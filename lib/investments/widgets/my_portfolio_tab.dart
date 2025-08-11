@@ -1,140 +1,132 @@
 import 'package:flutter/material.dart';
+import 'package:plano_a_dois/investments/investment_details_screen.dart';
+import 'package:plano_a_dois/models/investment_model.dart';
+import 'package:plano_a_dois/services/auth_service.dart';
+import 'package:plano_a_dois/services/firestore_service.dart';
+import 'package:provider/provider.dart';
 
-class MyPortfolioTab extends StatelessWidget {
+class MyPortfolioTab extends StatefulWidget {
   const MyPortfolioTab({super.key});
 
   @override
+  State<MyPortfolioTab> createState() => _MyPortfolioTabState();
+}
+
+class _MyPortfolioTabState extends State<MyPortfolioTab> {
+  final FirestoreService _firestoreService = FirestoreService();
+
+  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            color: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Resumo da Carteira',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xff0f172a)),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildPortfolioInfo('Valor Total Investido', 'R\$ 25.000,00'),
-                  const SizedBox(height: 16),
-                  _buildPortfolioInfo('Valor Atual da Carteira', 'R\$ 25.700,00'),
-                  const SizedBox(height: 16),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final authService = Provider.of<AuthService>(context);
+    final user = authService.currentUser;
+
+    if (user == null) {
+      return const Center(child: Text("Faça login para ver seus investimentos."));
+    }
+
+    return StreamBuilder<List<InvestmentModel>>(
+      stream: _firestoreService.getInvestments(user.uid),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(
+              child: Text("Você ainda não possui investimentos cadastrados."));
+        }
+
+        final investments = snapshot.data!;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Performance Geral',
+                        'Resumo da Carteira',
                         style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xff1e293b)),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xff0f172a)),
                       ),
-                      const Text(
-                        '+2.8%',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xff14b8a6)),
-                      ),
+                      const SizedBox(height: 16),
+                      // Lógica de resumo pode ser adicionada aqui
                     ],
-                  )
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Meus Ativos',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xff0f172a),
+                  ),
                 ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Meus Ativos',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xff0f172a),
+                    ),
+              ),
+              const SizedBox(height: 16),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: investments.length,
+                itemBuilder: (context, index) {
+                  final investment = investments[index];
+                  return _buildAssetItem(
+                    context,
+                    investment,
+                  );
+                },
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          _buildAssetItem('ITSA4', '+1.25%', '+5.8%', 'R\$ 5.250,00'),
-          _buildAssetItem('MXRF11', '-0.50%', '+12.3%', 'R\$ 3.120,00'),
-          _buildAssetItem('BOVA11', '+2.10%', '+8.1%', 'R\$ 2.570,00'),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildPortfolioInfo(String title, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.normal,
-              color: Color(0xff64748b)),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xff0f172a)),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAssetItem(String asset, String dayVariation, String personalYield, String totalValue) {
-    final isPositive = !dayVariation.startsWith('-');
+  Widget _buildAssetItem(BuildContext context, InvestmentModel investment) {
     return Card(
       elevation: 1,
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: isPositive ? const Color(0xffd1fae5) : const Color(0xfffee2e2),
+        leading: const CircleAvatar(
+          backgroundColor: Color(0xffd1fae5),
           child: Icon(
-            isPositive ? Icons.arrow_upward : Icons.arrow_downward,
-            color: isPositive ? const Color(0xff059669) : const Color(0xffef4444),
+            Icons.show_chart,
+            color: Color(0xff059669),
             size: 20,
           ),
         ),
-        title: Text(asset, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xff1e293b))),
-        subtitle: Text('Rendimento: $personalYield', style: const TextStyle(color: Color(0xff64748b))),
-        trailing: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              dayVariation,
-              style: TextStyle(
-                color: isPositive ? const Color(0xff14b8a6) : const Color(0xffef4444),
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              totalValue,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xff1e293b)),
-            ),
-          ],
+        title: Text(investment.nomeAtivo,
+            style: const TextStyle(
+                fontWeight: FontWeight.w600, color: Color(0xff1e293b))),
+        subtitle: Text('Preço Médio: R\$ ${investment.precoMedio.toStringAsFixed(2)}',
+            style: const TextStyle(color: Color(0xff64748b))),
+        trailing: Text(
+          '${investment.quantidade.toStringAsFixed(2)} Cotas',
+          style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Color(0xff1e293b)),
         ),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) =>
+                  InvestmentDetailsScreen(investment: investment),
+            ),
+          );
+        },
       ),
     );
   }

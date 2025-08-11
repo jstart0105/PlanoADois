@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:plano_a_dois/investments/add_investment_screen.dart';
 import 'package:plano_a_dois/investments/widgets/market_tab.dart';
 import 'package:plano_a_dois/investments/widgets/my_portfolio_tab.dart';
 
@@ -28,6 +29,16 @@ class InvestmentsScreen extends StatelessWidget {
             MyPortfolioTab(),
             MarketTab(),
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (context) => const AddInvestmentScreen()),
+            );
+          },
+          backgroundColor: const Color(0xff4f46e5),
+          child: const Icon(Icons.add, color: Colors.white),
         ),
         backgroundColor: const Color(0xfff1f5f9),
       ),
