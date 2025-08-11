@@ -32,9 +32,9 @@ dependencies:
     sdk: flutter
 
   # Firebase
-  firebase_core: ^2.3.0
+  firebase_core: ^2.32.0
   cloud_firestore: ^4.17.5
-  firebase_auth: ^4.16.0
+  firebase_auth: ^4.20.0
 
   # Gráficos
   fl_chart: ^0.68.0
