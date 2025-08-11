@@ -1,6 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:plano_a_dois/dashboard/dashboard_screen.dart';
+import 'package:plano_a_dois/auth/auth_wrapper.dart';
+import 'package:plano_a_dois/services/auth_service.dart';
+import 'package:provider/provider.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,14 +17,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Plano a Dois',
-      theme: ThemeData(
-        primaryColor: const Color(0xff4f46e5), // indigo-600
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff4f46e5)),
-        fontFamily: 'Inter',
+    return MultiProvider(
+      providers: [
+         StreamProvider<User?>.value(
+          value: AuthService().user,
+          initialData: null,
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Plano a Dois',
+        theme: ThemeData(
+          primaryColor: const Color(0xff4f46e5), // indigo-600
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff4f46e5)),
+          fontFamily: 'Inter',
+        ),
+        home: const AuthWrapper(),
       ),
-      home: const DashboardScreen(),
     );
   }
 }

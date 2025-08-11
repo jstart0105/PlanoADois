@@ -21,6 +21,27 @@ class FirestoreService {
     return null;
   }
 
+  // NOVO: Encontra um usuário pelo seu código de convite
+  Future<UserModel?> getUserByInviteCode(String code) async {
+    final querySnapshot = await _db
+        .collection('users')
+        .where('inviteCode', isEqualTo: code)
+        .limit(1)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      return UserModel.fromMap(querySnapshot.docs.first.data());
+    }
+    return null;
+  }
+
+  // NOVO: Vincula as contas dos dois usuários
+  Future<void> linkPartners(String userIdA, String userIdB) async {
+    await _db.collection('users').doc(userIdA).update({'partnerId': userIdB});
+    await _db.collection('users').doc(userIdB).update({'partnerId': userIdA});
+  }
+
+
   // --- Operações com Transações ---
   Future<void> addTransaction(TransactionModel transaction) {
     return _db.collection('transactions').add(transaction.toMap());

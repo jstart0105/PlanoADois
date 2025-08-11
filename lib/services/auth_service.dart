@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
-class AuthService {
+class AuthService with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Stream para o estado de autenticação do usuário
@@ -16,6 +17,7 @@ class AuthService {
         email: email,
         password: password,
       );
+      notifyListeners();
       return result.user;
     } catch (e) {
       print(e.toString());
@@ -30,6 +32,7 @@ class AuthService {
         email: email,
         password: password,
       );
+       notifyListeners();
       return result.user;
     } catch (e) {
       print(e.toString());
@@ -40,5 +43,6 @@ class AuthService {
   // Logout
   Future<void> signOut() async {
     await _auth.signOut();
+    notifyListeners();
   }
 }
