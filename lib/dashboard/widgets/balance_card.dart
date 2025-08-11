@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:plano_a_dois/models/transaction_model.dart';
 
 class BalanceCard extends StatelessWidget {
-  final bool isCoupleView;
+  final List<TransactionModel> transactions;
 
-  const BalanceCard({super.key, required this.isCoupleView});
+  const BalanceCard({super.key, required this.transactions});
 
   @override
   Widget build(BuildContext context) {
-    // Dados de exemplo
-    final String totalBalance = isCoupleView ? 'R\$ 15.250,00' : 'R\$ 8.100,00';
-    final String monthlyIncome = isCoupleView ? 'R\$ 7.500,00' : 'R\$ 4.000,00';
-    final String monthlyExpenses = isCoupleView ? 'R\$ 3.800,00' : 'R\$ 1.900,00';
+    // Lógica para calcular os valores a partir das transações
+    final double totalBalance = transactions.fold(0.0, (sum, item) => sum + item.valor);
+    
+    final DateTime now = DateTime.now();
+    final double monthlyIncome = transactions
+        .where((t) => t.valor > 0 && t.data.month == now.month && t.data.year == now.year)
+        .fold(0.0, (sum, item) => sum + item.valor);
+        
+    final double monthlyExpenses = transactions
+        .where((t) => t.valor < 0 && t.data.month == now.month && t.data.year == now.year)
+        .fold(0.0, (sum, item) => sum + item.valor);
 
     return Card(
       elevation: 2,
@@ -30,7 +38,7 @@ class BalanceCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              totalBalance,
+              'R\$ ${totalBalance.toStringAsFixed(2)}',
               style: const TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
@@ -41,9 +49,9 @@ class BalanceCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildIncomeExpenses(
-                    'Receitas do Mês', monthlyIncome, const Color(0xff14b8a6)), // teal-500
+                    'Receitas do Mês', 'R\$ ${monthlyIncome.toStringAsFixed(2)}', const Color(0xff14b8a6)), // teal-500
                 _buildIncomeExpenses(
-                    'Despesas do Mês', monthlyExpenses, const Color(0xffef4444)), // red-500
+                    'Despesas do Mês', 'R\$ ${monthlyExpenses.abs().toStringAsFixed(2)}', const Color(0xffef4444)), // red-500
               ],
             )
           ],

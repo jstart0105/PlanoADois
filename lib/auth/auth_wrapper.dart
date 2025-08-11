@@ -1,8 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:plano_a_dois/dashboard/dashboard_screen.dart';
-import 'package:plano_a_dois/transactions/transactions_screen.dart';
 import 'package:plano_a_dois/auth/welcome_screen.dart';
+import 'package:plano_a_dois/home/home_screen.dart'; // Importe a nova tela
 import 'package:provider/provider.dart';
 
 class AuthWrapper extends StatelessWidget {
@@ -13,7 +12,8 @@ class AuthWrapper extends StatelessWidget {
     final firebaseUser = context.watch<User?>();
 
     if (firebaseUser != null) {
-      return const TransactionsScreen();
+      // Redireciona para a HomeScreen com o menu de navegação
+      return const HomeScreen();
     }
     return const WelcomeScreen();
   }
