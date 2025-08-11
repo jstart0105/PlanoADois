@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:plano_a_dois/transactions/add_edit_transaction_screen.dart'; // Importe a nova tela
 import 'package:plano_a_dois/transactions/widgets/transaction_list_item.dart';
 import 'package:plano_a_dois/transactions/widgets/filters_modal.dart';
 
@@ -10,6 +11,12 @@ class TransactionsScreen extends StatefulWidget {
 }
 
 class _TransactionsScreenState extends State<TransactionsScreen> {
+  void _navigateToAddTransaction() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const AddEditTransactionScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,6 +60,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             date: '03/08/2025',
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToAddTransaction,
+        backgroundColor: const Color(0xff4f46e5),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       backgroundColor: const Color(0xfff1f5f9),
     );

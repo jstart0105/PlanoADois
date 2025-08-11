@@ -19,9 +19,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+         // Provider para o estado de autenticação (Stream de User)
          StreamProvider<User?>.value(
           value: AuthService().user,
           initialData: null,
+        ),
+        // Provider para a instância do AuthService
+        ChangeNotifierProvider<AuthService>(
+          create: (_) => AuthService(),
         ),
       ],
       child: MaterialApp(
